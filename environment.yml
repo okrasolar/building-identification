@@ -1,0 +1,21 @@
+name: okra-buildings
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.6  # earth engine doesn't play well with higher versions
+  - pytorch
+  - torchvision
+  - black
+  - pytest
+  - pytest-flake8
+  - mypy
+  - xarray
+  - geojson
+  - earthengine-api
+  - rasterio
+  - netCDF4
+  - matplotlib
+  - pip
+  - pip:
+    - pytorch-lightning
