@@ -10,12 +10,12 @@ class TestClassifier:
         num_non_buildings = 5
 
         for i in range(num_buildings):
-            i_folder = tmp_path / "features" / "with_buildings" / str(i)
+            i_folder = tmp_path / "features" / "with_buildings" / "training" / str(i)
             i_folder.mkdir(parents=True)
             (i_folder / "x.npy").touch()
 
         for i in range(num_non_buildings):
-            i_folder = tmp_path / "features" / "without_buildings" / str(i)
+            i_folder = tmp_path / "features" / "without_buildings" / "training" / str(i)
             i_folder.mkdir(parents=True)
             (i_folder / "x.npy").touch()
 
