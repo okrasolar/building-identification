@@ -88,8 +88,12 @@ class Engineer:
                 if not np.isnan(sentinel_slice).any():
 
                     self.save_arrays(
-                        hrsl_slice, sentinel_slice, country_code, filename, counter,
-                        val_ratio
+                        hrsl_slice,
+                        sentinel_slice,
+                        country_code,
+                        filename,
+                        counter,
+                        val_ratio,
                     )
 
                     counter += 1
@@ -107,7 +111,7 @@ class Engineer:
         country_code: str,
         filename: str,
         file_idx: int,
-        val_ratio: float
+        val_ratio: float,
     ) -> None:
 
         is_val = np.random.uniform() <= val_ratio
@@ -136,8 +140,10 @@ class Engineer:
         print(f"Saved {foldername}")
 
     def process_country(
-        self, country_code: str, imsize: Union[int, Tuple[int, int]] = 224,
-            val_ratio: float = 0.2
+        self,
+        country_code: str,
+        imsize: Union[int, Tuple[int, int]] = 224,
+        val_ratio: float = 0.2,
     ) -> None:
 
         sentinel_folder, hrsl_folder, files_exist = self._check_necessary_files_exist(
@@ -155,7 +161,11 @@ class Engineer:
 
                 print(f"Processing {sentinel_file.name}")
                 self.process_single_filepair(
-                    country_code, hrsl_file, sentinel_file, imsize=imsize, val_ratio=val_ratio
+                    country_code,
+                    hrsl_file,
+                    sentinel_file,
+                    imsize=imsize,
+                    val_ratio=val_ratio,
                 )
             else:
                 print(f"Skipping {sentinel_file.name}")

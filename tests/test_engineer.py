@@ -119,7 +119,7 @@ class TestEngineer:
             hrsl_filepath=hrsl_folder / "data.nc",
             sentinel_filepath=sentinel_folder / "data.nc",
             imsize=imsize,
-            val_ratio=0.2
+            val_ratio=0.2,
         )
 
         if with_buildings:
@@ -127,7 +127,9 @@ class TestEngineer:
         else:
             output_folder = tmp_path / "features/without_buildings"
 
-        output_folders = list(output_folder.glob("training/*")) + list(output_folder.glob("validation/*"))
+        output_folders = list(output_folder.glob("training/*")) + list(
+            output_folder.glob("validation/*")
+        )
         assert len(output_folders) == 2
 
         for output_folder in output_folders:
