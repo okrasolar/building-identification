@@ -32,6 +32,7 @@ class UNet(ResnetBase):
             ]
         )
         self.conv_transpose = nn.ConvTranspose2d(16, num_labels, 1)
+        self.sigmoid = nn.Sigmoid()
 
     def add_hooks(self) -> List[torch.utils.hooks.RemovableHandle]:
         hooks = []
@@ -77,7 +78,7 @@ class UNet(ResnetBase):
         for upsampler, interim_output in zip(self.upsamples[:-1], interim):
             x = upsampler(x, interim_output)
         x = self.upsamples[-1](x, org_input)
-        return self.conv_transpose(x)
+        return self.sigmoid(self.conv_transpose(x))
 
 
 class UpBlock(pl.LightningModule):
