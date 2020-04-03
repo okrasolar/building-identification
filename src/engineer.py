@@ -53,6 +53,7 @@ class Engineer:
         hrsl_filepath: Path,
         sentinel_filepath: Path,
         imsize: Union[int, Tuple[int, int]],
+        val_ratio: float,
     ) -> None:
 
         if isinstance(imsize, int):
@@ -87,7 +88,8 @@ class Engineer:
                 if not np.isnan(sentinel_slice).any():
 
                     self.save_arrays(
-                        hrsl_slice, sentinel_slice, country_code, filename, counter
+                        hrsl_slice, sentinel_slice, country_code, filename, counter,
+                        val_ratio
                     )
 
                     counter += 1
@@ -105,17 +107,25 @@ class Engineer:
         country_code: str,
         filename: str,
         file_idx: int,
+        val_ratio: float
     ) -> None:
+
+        is_val = np.random.uniform() <= val_ratio
+
+        if is_val:
+            data_subset = "validation"
+        else:
+            data_subset = "training"
         foldername = f"{country_code}_{filename}_{file_idx}"
 
         contains_buildings = hrsl_slice.max() >= 1
 
         if contains_buildings:
-            pair_folder = self.with_buildings / foldername
-            pair_folder.mkdir(exist_ok=True)
+            pair_folder = self.with_buildings / data_subset / foldername
+            pair_folder.mkdir(exist_ok=True, parents=True)
         else:
-            pair_folder = self.without_buildings / foldername
-            pair_folder.mkdir(exist_ok=True)
+            pair_folder = self.without_buildings / data_subset / foldername
+            pair_folder.mkdir(exist_ok=True, parents=True)
 
         if contains_buildings:
             # otherwise, this is just an array of 0s - no point
@@ -126,7 +136,8 @@ class Engineer:
         print(f"Saved {foldername}")
 
     def process_country(
-        self, country_code: str, imsize: Union[int, Tuple[int, int]] = 224
+        self, country_code: str, imsize: Union[int, Tuple[int, int]] = 224,
+            val_ratio: float = 0.2
     ) -> None:
 
         sentinel_folder, hrsl_folder, files_exist = self._check_necessary_files_exist(
@@ -144,7 +155,7 @@ class Engineer:
 
                 print(f"Processing {sentinel_file.name}")
                 self.process_single_filepair(
-                    country_code, hrsl_file, sentinel_file, imsize=imsize
+                    country_code, hrsl_file, sentinel_file, imsize=imsize, val_ratio=val_ratio
                 )
             else:
                 print(f"Skipping {sentinel_file.name}")
