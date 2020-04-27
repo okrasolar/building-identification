@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     # figure out which model to use
     parser.add_argument(
-        "--model_name",
+        "--model",
         type=str,
         default="classifier",
         help="One of {classifier, segmenter}.",
