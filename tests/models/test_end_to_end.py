@@ -33,11 +33,12 @@ class TestModelsEndToEnd:
     @staticmethod
     def _get_args(tmp_path: Path) -> Namespace:
         args = {
-            'data_dir': str(tmp_path.absolute()),
+            "data_dir": str(tmp_path.absolute()),
             "model": "unet",
             "learning_rate": 0.02,
             "batch_size": 64,
-
+            "pretrained": False,
+            "max_epochs": 1,
         }
 
         return Namespace(**args)

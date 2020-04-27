@@ -12,20 +12,21 @@ from .unet import UNet
 from .segnet import Encoder, SegNet
 from .data import ClassifierDataset, SegmentationDataset
 
-from typing import Any, Callable, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type
 
 
 class Base(pl.LightningModule):
 
-    loss: Callable = F.binary_cross_entropy
+    hparams: Namespace
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        print(self.model(x))
         return self.model(x).squeeze(-1)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        return {"loss": self.loss(y_hat, y)}
+        return {"loss": F.binary_cross_entropy(y_hat, y)}
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
@@ -53,13 +54,19 @@ class Base(pl.LightningModule):
         for key, val in default_args.items():
             parser.add_argument(key, type=val[0], default=val[1])
 
+        parser.add_argument("--pretrained", dest="pretrained", action="store_true")
+        parser.add_argument("--not_pretrained", dest="pretrained", action="store_false")
+        parser.set_defaults(pretrained=True)
+
         return parser
 
 
 class Classifier(Base):
     def __init__(self, hparams: Namespace) -> None:
         super().__init__()
+
         self.hparams = hparams
+        self.data_dir = Path(hparams.data_dir)
 
         if hparams.model == "unet":
             self.model = UNetClassifier(hparams.pretrained)
@@ -71,23 +78,24 @@ class Classifier(Base):
     @pl.data_loader
     def train_dataloader(self):
         return DataLoader(
-            ClassifierDataset(data_dir=self.hparams.data_dir, train_set=True),
+            ClassifierDataset(data_dir=self.data_dir, train_set=True),
             batch_size=self.hparams.batch_size,
         )
 
     @pl.data_loader
     def val_dataloader(self):
         return DataLoader(
-            ClassifierDataset(data_dir=self.hparams.data_dir, train_set=False),
+            ClassifierDataset(data_dir=self.data_dir, train_set=False),
             batch_size=self.hparams.batch_size,
         )
 
 
-class Segmenter(pl.LightningModule):
+class Segmenter(Base):
     def __init__(self, hparams: Namespace):
         super().__init__()
 
         self.hparams = hparams
+        self.data_dir = Path(hparams.data_dir)
 
         if hparams.model == "unet":
             self.model = UNet(num_labels=1, pretrained=hparams.pretrained)
@@ -102,13 +110,13 @@ class Segmenter(pl.LightningModule):
     @pl.data_loader
     def train_dataloader(self):
         return DataLoader(
-            SegmentationDataset(data_dir=self.hparams.data_dir, train_set=True),
+            SegmentationDataset(data_dir=self.data_dir, train_set=True),
             batch_size=self.hparams.batch_size,
         )
 
     @pl.data_loader
     def val_dataloader(self):
         return DataLoader(
-            SegmentationDataset(data_dir=self.hparams.data_dir, train_set=False),
+            SegmentationDataset(data_dir=self.data_dir, train_set=False),
             batch_size=self.hparams.batch_size,
         )
