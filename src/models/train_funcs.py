@@ -1,23 +1,13 @@
-from pathlib import Path
+from argparse import Namespace
+
 import pytorch_lightning as pl
-from .models import Classifier, Segmenter
 
 
-def train_classifier(max_epochs: int, data_dir: Path) -> Classifier:
+def train_model(model: pl.LightningModule, hparams: Namespace) -> pl.LightningModule:
 
-    classifier = Classifier(data_dir=data_dir)
+    trainer = pl.Trainer(
+        default_save_path=hparams.data_folder,
+    )
+    trainer.fit(model)
 
-    trainer = pl.Trainer(max_epochs=max_epochs)
-    trainer.fit(classifier)
-
-    return classifier
-
-
-def train_segmenter(max_epochs: int, data_dir: Path) -> Segmenter:
-
-    segmenter = Segmenter(data_dir=data_dir)
-
-    trainer = pl.Trainer(max_epochs=max_epochs)
-    trainer.fit(segmenter)
-
-    return segmenter
+    return model

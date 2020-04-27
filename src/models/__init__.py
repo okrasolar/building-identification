@@ -1,5 +1,11 @@
 from .models import Classifier, Segmenter
-from .train_funcs import train_classifier, train_segmenter
+from .train_funcs import train_model
 
 
-__all__ = ["Classifier", "Segmenter", "train_classifier", "train_segmenter"]
+__all__ = ["Classifier", "Segmenter", "train_model", "STR2MODEL"]
+
+
+STR2MODEL = {
+    "classifier": Classifier,
+    "segmenter": Segmenter
+}
