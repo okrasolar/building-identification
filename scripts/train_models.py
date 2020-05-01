@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     # figure out which model to use
     parser.add_argument(
-        "--model",
+        "--model_type",
         type=str,
         default="classifier",
         help="One of {classifier, segmenter}.",
@@ -21,8 +21,8 @@ if __name__ == "__main__":
     temp_args = parser.parse_known_args()[0]
 
     model_args = (
-        STR2MODEL[temp_args.model_name].add_model_specific_args(parser).parse_args()
+        STR2MODEL[temp_args.model_type].add_model_specific_args(parser).parse_args()
     )
-    model = STR2MODEL[temp_args.model_name](model_args)
+    model = STR2MODEL[temp_args.model_type](model_args)
 
     train_model(model, model_args)

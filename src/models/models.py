@@ -20,7 +20,6 @@ class Base(pl.LightningModule):
     hparams: Namespace
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        print(self.model(x))
         return self.model(x).squeeze(-1)
 
     def training_step(self, batch, batch_idx):
@@ -49,6 +48,7 @@ class Base(pl.LightningModule):
             "--data_dir": (str, str(Path("../data").absolute())),
             "--learning_rate": (float, 0.02),
             "--batch_size": (int, 64),
+            "--model": (str, "unet"),
         }
 
         for key, val in default_args.items():
