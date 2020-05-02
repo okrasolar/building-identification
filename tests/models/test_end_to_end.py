@@ -39,7 +39,7 @@ class TestModelsEndToEnd:
             "batch_size": 64,
             "pretrained": False,
             "max_epochs": 1,
-            "patience": 1
+            "patience": 1,
         }
 
         return Namespace(**args)
