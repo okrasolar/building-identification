@@ -17,6 +17,7 @@ if __name__ == "__main__":
         help="One of {classifier, segmenter}.",
     )
     parser.add_argument("--max_epochs", type=int, default=1000)
+    parser.add_argument("--patience", type=int, default=3)
 
     temp_args = parser.parse_known_args()[0]
 
