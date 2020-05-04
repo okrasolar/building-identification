@@ -6,6 +6,8 @@ import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
+import numpy as np
+from sklearn.metrics import roc_auc_score, accuracy_score
 
 from .unet import Classifier as UNetClassifier
 from .unet import UNet
@@ -30,12 +32,11 @@ class Base(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        return {"val_loss": F.binary_cross_entropy(y_hat.squeeze(-1), y)}
-
-    def validation_epoch_end(self, outputs):
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-
-        return {"val_loss": avg_loss, "log": {"val_loss": avg_loss}}
+        return {
+            "val_loss": F.binary_cross_entropy(y_hat.squeeze(-1), y),
+            "pred": y_hat,
+            "label": y,
+        }
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
@@ -89,6 +90,25 @@ class Classifier(Base):
             batch_size=self.hparams.batch_size,
         )
 
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+
+        log_dict: Dict[str, float] = {"val_loss": avg_loss}
+
+        # in addition, let's calculate some more interpretable metrics
+        epoch_labels = torch.cat([x["label"] for x in outputs]).detach().cpu().numpy()
+        epoch_pred = torch.cat([x["pred"] for x in outputs]).detach().cpu().numpy()
+
+        if len(np.unique(epoch_labels)) > 1:
+            # sometimes this happens in the warm up validation
+            log_dict["roc_auc_score"] = roc_auc_score(epoch_labels, epoch_pred)
+
+        # let's pick an arbitrary threshold of 0.5 to communicate accuracy
+        binary_preds = (epoch_pred > 0.5).astype(int)
+        log_dict["classification_accuracy"] = accuracy_score(epoch_labels, binary_preds)
+
+        return {"val_loss": avg_loss, "log": log_dict}
+
 
 class Segmenter(Base):
     def __init__(self, hparams: Namespace):
@@ -120,3 +140,23 @@ class Segmenter(Base):
             SegmentationDataset(data_dir=self.data_dir, train_set=False),
             batch_size=self.hparams.batch_size,
         )
+
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+
+        log_dict: Dict[str, float] = {"val_loss": avg_loss}
+
+        # in addition, let's calculate some more interpretable metrics
+        epoch_labels = torch.cat([x["label"] for x in outputs]).detach().cpu().numpy()
+        epoch_pred = torch.cat([x["pred"] for x in outputs]).detach().cpu().numpy()
+
+        # we can start with accuracy
+        binary_pred = (epoch_pred > 0.5).astype(int)
+        log_dict["segmentation_accuracy"] = accuracy_score(
+            epoch_labels.reshape(epoch_labels.shape[0], -1),
+            binary_pred.reshape(binary_pred.shape[0], -1),
+        )
+
+        # TODO - IOU
+
+        return {"val_loss": avg_loss, "log": log_dict}

@@ -17,5 +17,6 @@ dependencies:
   - netCDF4
   - matplotlib
   - pip
+  - scikit-learn
   - pip:
     - pytorch-lightning
