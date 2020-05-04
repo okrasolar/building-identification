@@ -122,10 +122,10 @@ class SentinelExporter(BaseExporter):
                 1,
             )
         elif bands_type == "TrueRGB":
-            return ["B4", "B2", "B3"], 10000
+            return ["B4", "B2", "B3"], int(10000 * 2.5)
         elif bands_type == "RGB":
             # https://code.earthengine.google.com/6051c2f82cdd96b1471f9a26d4210e99
-            return ["B12", "B11", "B4"], 10000
+            return ["B12", "B11", "B4"], int(10000 * 2.5)
         else:
             raise AssertionError(f"Unknown bands type {bands_type}")
 
