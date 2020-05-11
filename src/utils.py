@@ -6,10 +6,7 @@ import numpy as np
 from typing import Tuple
 
 
-COUNTRY_CODES = [
-    "pri",
-    "khm",
-]
+COUNTRY_CODES = ["pri", "khm"]
 
 
 def make_hrsl_dataset_name(country_code: str) -> str:

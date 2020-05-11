@@ -22,7 +22,7 @@ class BaseProcessor(ABC):
         raise NotImplementedError
 
     def regrid(
-        self, ds: xr.Dataset, reference_ds: xr.Dataset, method: str = "nearest",
+        self, ds: xr.Dataset, reference_ds: xr.Dataset, method: str = "nearest"
     ) -> xr.Dataset:
         return ds.reindex(
             {"lat": reference_ds.lat, "lon": reference_ds.lon}, method=method

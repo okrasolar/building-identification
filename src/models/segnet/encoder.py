@@ -29,7 +29,9 @@ class Encoder(pl.LightningModule):
 
         self.encoder = nn.ModuleList(module_list)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, Dict[int, torch.Tensor]]:  # type: ignore
+    def forward(
+        self, x: torch.Tensor
+    ) -> Tuple[torch.Tensor, Dict[int, torch.Tensor]]:  # type: ignore
 
         counter = 1
         indices_dict: Dict[int, torch.Tensor] = {}

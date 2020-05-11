@@ -43,7 +43,9 @@ class DecoderBlock(pl.LightningModule):
             ]
         )
 
-    def forward(self, x: torch.Tensor, indices: torch.Tensor) -> torch.Tensor:  # type: ignore
+    def forward(
+        self, x: torch.Tensor, indices: torch.Tensor
+    ) -> torch.Tensor:  # type: ignore
 
         x = self.unpool(x, indices)
         return self.conv_layers(x)

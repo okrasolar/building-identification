@@ -29,8 +29,7 @@ class Base(pl.LightningModule):
         y_hat = self.forward(x)
 
         loss = F.binary_cross_entropy(y_hat, y)
-        return {"loss": loss,
-                "log": {"train_loss": loss}}
+        return {"loss": loss, "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
@@ -153,7 +152,10 @@ class Segmenter(Base):
         epoch_labels = torch.cat([x["label"] for x in outputs]).detach().cpu().numpy()
         epoch_pred = torch.cat([x["pred"] for x in outputs]).detach().cpu().numpy()
 
-        # we can start with accuracy
+        if len(np.unique(epoch_labels)) > 1:
+            # sometimes this happens in the warm up validation
+            log_dict["roc_auc_score"] = roc_auc_score(epoch_labels, epoch_pred)
+
         binary_pred = (epoch_pred > 0.5).astype(int)
         log_dict["segmentation_accuracy"] = accuracy_score(
             epoch_labels.reshape(epoch_labels.shape[0], -1),
