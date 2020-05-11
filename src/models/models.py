@@ -27,7 +27,10 @@ class Base(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
-        return {"loss": F.binary_cross_entropy(y_hat, y)}
+
+        loss = F.binary_cross_entropy(y_hat, y)
+        return {"loss": loss,
+                "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
