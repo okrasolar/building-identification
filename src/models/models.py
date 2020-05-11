@@ -154,7 +154,10 @@ class Segmenter(Base):
 
         if len(np.unique(epoch_labels)) > 1:
             # sometimes this happens in the warm up validation
-            log_dict["roc_auc_score"] = roc_auc_score(epoch_labels, epoch_pred)
+            log_dict["roc_auc_score"] = roc_auc_score(
+                epoch_labels.reshape(epoch_labels.shape[0], -1),
+                epoch_pred.reshape(epoch_pred.shape[0], -1),
+            )
 
         binary_pred = (epoch_pred > 0.5).astype(int)
         log_dict["segmentation_accuracy"] = accuracy_score(
