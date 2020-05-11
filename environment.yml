@@ -19,4 +19,4 @@ dependencies:
   - pip
   - scikit-learn
   - pip:
-    - pytorch-lightning==0.74
+    - pytorch-lightning==0.7.1
