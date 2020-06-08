@@ -2,7 +2,7 @@ from pathlib import Path
 import xarray as xr
 import numpy as np
 
-from .utils import make_sentinel_dataset_name, make_hrsl_dataset_name
+from .utils import make_sentinel_dataset_name, make_hrsl_dataset_name, load_sentinel
 
 from typing import cast, Tuple, Union
 
@@ -21,13 +21,6 @@ class Engineer:
 
         self.without_buildings.mkdir(exist_ok=True)
         self.with_buildings.mkdir(exist_ok=True)
-
-    def _load_sentinel(self, filepath: Path) -> xr.Dataset:
-        return (
-            xr.open_rasterio(filepath)
-            .to_dataset(name="sentinel")
-            .rename({"x": "lon", "y": "lat"})
-        )
 
     def _check_necessary_files_exist(
         self, country_code: str
@@ -69,7 +62,7 @@ class Engineer:
         lat_imsize, lon_imsize = cast(Tuple, imsize)
 
         hrsl_ds = xr.open_dataset(hrsl_filepath)
-        sentinel_ds = self._load_sentinel(sentinel_filepath)
+        sentinel_ds = load_sentinel(sentinel_filepath)
 
         filename = hrsl_filepath.name
 

@@ -2,6 +2,7 @@ from pathlib import Path
 import random
 from matplotlib import pyplot as plt
 import numpy as np
+import xarray as xr
 
 from typing import Tuple
 
@@ -15,6 +16,14 @@ def make_hrsl_dataset_name(country_code: str) -> str:
 
 def make_sentinel_dataset_name(country_code: str) -> str:
     return f"sentinel_{country_code}"
+
+
+def load_sentinel(filepath: Path) -> xr.Dataset:
+    return (
+        xr.open_rasterio(filepath)
+        .to_dataset(name="sentinel")
+        .rename({"x": "lon", "y": "lat"})
+    )
 
 
 def plot_subset(

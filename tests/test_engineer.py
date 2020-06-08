@@ -105,7 +105,7 @@ class TestEngineer:
         with rasterio.open(
             sentinel_folder / "data.tif",
             "w",
-            driver='GTiff',
+            driver="GTiff",
             height=lat_len,
             width=lon_len,
             count=3,  # number of bands

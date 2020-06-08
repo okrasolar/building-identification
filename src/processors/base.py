@@ -2,6 +2,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 import xarray as xr
 
+from ..utils import load_sentinel
+
+from typing import cast
+
 
 class BaseProcessor(ABC):
 
@@ -34,9 +38,9 @@ class BaseProcessor(ABC):
         there is no need to pass around an enormous grid for the regridding.
         In fact, only the latitude and longitude values are necessary!
         """
-        full_dataset = xr.open_dataset(path_to_grid)
+        full_dataset = load_sentinel(path_to_grid)
 
         assert {"lat", "lon"} <= set(
             full_dataset.dims
         ), "Dimensions named lat and lon must be in the reference grid"
-        return full_dataset[["lat", "lon"]]
+        return cast(xr.Dataset, full_dataset[["lat", "lon"]])
