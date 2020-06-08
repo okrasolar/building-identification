@@ -16,11 +16,11 @@ class HRSLProcessor(BaseProcessor):
 
     def load_sentinel_grids(self) -> List[Tuple[xr.Dataset, str]]:
         dataset_name = make_sentinel_dataset_name(self.country_code)
-        processed_dataset_dir = self.data_dir / f"processed/{dataset_name}"
+        processed_dataset_dir = self.data_dir / f"raw/{dataset_name}"
 
         output: List[Tuple[xr.Dataset, str]] = []
         for filepath in processed_dataset_dir.glob("*"):
-            if filepath.name.endswith(".nc"):
+            if filepath.name.endswith(".tif"):
                 output.append((self.load_reference_grid(filepath), filepath.name))
         return output
 

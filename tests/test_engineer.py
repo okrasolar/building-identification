@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import rasterio
 
 from src import Engineer
 from src.utils import make_sentinel_dataset_name, make_hrsl_dataset_name
@@ -13,10 +14,8 @@ class TestEngineer:
 
         country = "khm"
 
-        processed_folder = tmp_path / "processed"
-
-        hrsl_folder = processed_folder / make_hrsl_dataset_name(country)
-        sentinel_folder = processed_folder / make_sentinel_dataset_name(country)
+        hrsl_folder = tmp_path / "processed" / make_hrsl_dataset_name(country)
+        sentinel_folder = tmp_path / "raw" / make_sentinel_dataset_name(country)
 
         if not failure_case:
             hrsl_folder.mkdir(parents=True)
@@ -95,21 +94,24 @@ class TestEngineer:
             {"hrsl": (["lat", "lon"], mask)},
             coords={"lat": latitudes, "lon": longitudes},
         )
-        sentinel_ds = xr.Dataset(
-            {"sentinel": (["lat", "lon", "band"], sentinel_var)},
-            coords={"lat": latitudes, "lon": longitudes, "band": [0, 1, 2]},
-        )
 
-        processed_folder = tmp_path / "processed"
-
-        hrsl_folder = processed_folder / make_hrsl_dataset_name(country)
-        sentinel_folder = processed_folder / make_sentinel_dataset_name(country)
+        hrsl_folder = tmp_path / "processed" / make_hrsl_dataset_name(country)
+        sentinel_folder = tmp_path / "raw" / make_sentinel_dataset_name(country)
 
         hrsl_folder.mkdir(parents=True)
         sentinel_folder.mkdir(parents=True)
 
         hrsl_ds.to_netcdf(hrsl_folder / "data.nc")
-        sentinel_ds.to_netcdf(sentinel_folder / "data.nc")
+        with rasterio.open(
+            sentinel_folder / "data.tif",
+            "w",
+            driver='GTiff',
+            height=lat_len,
+            width=lon_len,
+            count=3,  # number of bands
+            dtype=np.float64,
+        ) as file_to_write:
+            file_to_write.write(np.moveaxis(sentinel_var, -1, 0).astype(np.float64))
 
         engineer = Engineer(tmp_path)
 
@@ -117,7 +119,7 @@ class TestEngineer:
         engineer.process_single_filepair(
             country_code=country,
             hrsl_filepath=hrsl_folder / "data.nc",
-            sentinel_filepath=sentinel_folder / "data.nc",
+            sentinel_filepath=sentinel_folder / "data.tif",
             imsize=imsize,
             val_ratio=0.2,
         )

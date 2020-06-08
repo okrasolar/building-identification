@@ -22,11 +22,18 @@ class Engineer:
         self.without_buildings.mkdir(exist_ok=True)
         self.with_buildings.mkdir(exist_ok=True)
 
+    def _load_sentinel(self, filepath: Path) -> xr.Dataset:
+        return (
+            xr.open_rasterio(filepath)
+            .to_dataset(name="sentinel")
+            .rename({"x": "lon", "y": "lat"})
+        )
+
     def _check_necessary_files_exist(
         self, country_code: str
     ) -> Tuple[Path, Path, bool]:
         hrsl_data = self.processed_folder / make_hrsl_dataset_name(country_code)
-        sentinel_data = self.processed_folder / make_sentinel_dataset_name(country_code)
+        sentinel_data = self.raw_folder / make_sentinel_dataset_name(country_code)
 
         return sentinel_data, hrsl_data, (hrsl_data.exists() and sentinel_data.exists())
 
@@ -62,7 +69,7 @@ class Engineer:
         lat_imsize, lon_imsize = cast(Tuple, imsize)
 
         hrsl_ds = xr.open_dataset(hrsl_filepath)
-        sentinel_ds = xr.open_dataset(sentinel_filepath)
+        sentinel_ds = self._load_sentinel(sentinel_filepath)
 
         filename = hrsl_filepath.name
 
@@ -155,7 +162,7 @@ class Engineer:
             return None
 
         for sentinel_file in sentinel_folder.glob("**/*"):
-            if sentinel_file.name.endswith(".nc"):
+            if sentinel_file.name.endswith(".tif"):
                 hrsl_file = hrsl_folder / sentinel_file.name
                 assert hrsl_file.exists()
 
