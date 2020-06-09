@@ -3,6 +3,8 @@
 This is a work in progress project to use [Sentinel](https://developers.google.com/earth-engine/datasets/catalog/sentinel-2/)
 data to identify buildings.
 
+See the [scripts](scripts) for more information on how to run different parts of the pipeline.
+
 ## Setup
 
 [Anaconda](https://www.anaconda.com/download/#macos) running python 3.6 is used as the package manager. To get set up
