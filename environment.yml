@@ -20,3 +20,7 @@ dependencies:
   - scikit-learn
   - pip:
     - pytorch-lightning==0.7.1
+    - gdown
+    - google-api-python-client  # google drive
+    - google-auth-httplib2  # google drive
+    - google-auth-oauthlib  # google drive
