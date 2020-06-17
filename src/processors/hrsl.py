@@ -1,5 +1,8 @@
 from pathlib import Path
 import xarray as xr
+import rasterio
+from rasterio.mask import mask
+from shapely import geometry
 import numpy as np
 
 from .base import BaseProcessor
@@ -24,27 +27,59 @@ class HRSLProcessor(BaseProcessor):
                 output.append((self.load_reference_grid(filepath), filepath.name))
         return output
 
-    def process(self, **kwargs) -> None:
+    def write_temp_hrsl_grid(self, reference_grid: xr.Dataset, filepath: Path) -> None:
 
-        da = xr.open_rasterio(
+        img = rasterio.open(
             self.raw_data_dir / f"hrsl_{self.country_code}_settlement.tif"
-        ).isel(band=0)
-
-        da = (
-            self.zero_array(da)
-            .to_dataset(name="hrsl")
-            .rename({"x": "lon", "y": "lat"})
-            .drop("band")
         )
 
-        da.to_netcdf(self.processed_dir / "data.nc")
+        grid_box = geometry.box(
+            reference_grid.lon.min(),
+            reference_grid.lat.min(),
+            reference_grid.lon.max(),
+            reference_grid.lat.max(),
+        )
+        crop, cropTransform = mask(img, [grid_box], crop=True)
+
+        new_metadata = img.meta
+        new_metadata.update(
+            {
+                "driver": "GTiff",
+                "height": crop.shape[1],
+                "width": crop.shape[2],
+                "transform": cropTransform,
+                "crs": img.crs,
+            }
+        )
+
+        with rasterio.open(filepath, "w", **new_metadata) as dest:
+            dest.write(crop)
+
+    def process(self, **kwargs) -> None:
 
         sentinel_grids = self.load_sentinel_grids()
 
+        interim_filepath = self.processed_dir / "interim.tif"
+
         for reference_grid, grid_name in sentinel_grids:
+            if interim_filepath.exists():
+                interim_filepath.unlink()
+
             print(f"Regridding onto {grid_name}")
+
+            self.write_temp_hrsl_grid(reference_grid, filepath=interim_filepath)
+
+            da = xr.open_rasterio(interim_filepath).isel(band=0)
+            da = (
+                self.zero_array(da)
+                .to_dataset(name="hrsl")
+                .rename({"x": "lon", "y": "lat"})
+                .drop("band")
+            )
+
             regridded = self.regrid(ds=da, reference_ds=reference_grid)
             regridded.to_netcdf(self.processed_dir / grid_name)
+        interim_filepath.unlink()
 
     @staticmethod
     def zero_array(da: xr.DataArray) -> xr.DataArray:

@@ -111,6 +111,7 @@ class TestEngineer:
             count=3,  # number of bands
             dtype=np.float64,
         ) as file_to_write:
+            # geotiff files have to be written as (band, row, column)
             file_to_write.write(np.moveaxis(sentinel_var, -1, 0).astype(np.float64))
 
         engineer = Engineer(tmp_path)

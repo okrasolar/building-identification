@@ -18,6 +18,7 @@ dependencies:
   - matplotlib
   - pip
   - scikit-learn
+  - shapely
   - pip:
     - pytorch-lightning==0.7.1
     - gdown
