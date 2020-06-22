@@ -8,7 +8,8 @@ dependencies:
   - torchvision
   - black
   - pytest
-  - pytest-flake8
+  - flake8==3.7.9
+  - pytest-flake8==1.0.5
   - mypy
   - xarray
   - geojson
