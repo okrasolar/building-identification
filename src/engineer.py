@@ -69,21 +69,25 @@ class Engineer:
         assert hrsl_ds.lat.size == sentinel_ds.lat.size
         assert hrsl_ds.lon.size == sentinel_ds.lon.size
 
-        hrsl_np = self.hrsl_to_numpy(hrsl_ds)
-        sentinel_np = self.sentinel_to_numpy(sentinel_ds)
-
         skipped_files = counter = cur_lat = 0
-        max_lat, max_lon = hrsl_np.shape[0], hrsl_np.shape[1]
+        max_lat, max_lon = hrsl_ds.lat.size, hrsl_ds.lon.size
 
         while (cur_lat + lat_imsize) <= max_lat:
             cur_lon = 0
             while (cur_lon + lon_imsize) <= max_lon:
-                hrsl_slice = hrsl_np[
-                    cur_lat : cur_lat + lat_imsize, cur_lon : cur_lon + lon_imsize
-                ]
-                sentinel_slice = sentinel_np[
-                    cur_lat : cur_lat + lat_imsize, cur_lon : cur_lon + lon_imsize
-                ]
+
+                hrsl_slice = self.hrsl_to_numpy(
+                    hrsl_ds.isel(
+                        lat=slice(cur_lat, cur_lat + lat_imsize),
+                        lon=slice(cur_lon, cur_lon + lon_imsize),
+                    )
+                )
+                sentinel_slice = self.sentinel_to_numpy(
+                    sentinel_ds.isel(
+                        lat=slice(cur_lat, cur_lat + lat_imsize),
+                        lon=slice(cur_lon, cur_lon + lon_imsize),
+                    )
+                )
 
                 if not np.isnan(sentinel_slice).any():
 
