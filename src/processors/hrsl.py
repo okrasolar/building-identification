@@ -8,7 +8,7 @@ import numpy as np
 from .base import BaseProcessor
 from ..utils import make_hrsl_dataset_name, make_sentinel_dataset_name
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 class HRSLProcessor(BaseProcessor):
@@ -62,6 +62,11 @@ class HRSLProcessor(BaseProcessor):
         interim_filepath = self.processed_dir / "interim.tif"
 
         for reference_grid, grid_name in sentinel_grids:
+            if kwargs.get("checkpoint", True):
+                if (self.processed_dir / grid_name).exists():
+                    print("File already processed! Skipping")
+                    continue
+
             if interim_filepath.exists():
                 interim_filepath.unlink()
 
@@ -70,19 +75,20 @@ class HRSLProcessor(BaseProcessor):
             self.write_temp_hrsl_grid(reference_grid, filepath=interim_filepath)
 
             da = xr.open_rasterio(interim_filepath).isel(band=0)
-            da = (
-                self.zero_array(da)
-                .to_dataset(name="hrsl")
-                .rename({"x": "lon", "y": "lat"})
-                .drop("band")
-            )
+            da = self.zero_array(da)
+            if da is not None:
+                da = (
+                    da.to_dataset(name="hrsl")
+                    .rename({"x": "lon", "y": "lat"})
+                    .drop("band")
+                )
 
-            regridded = self.regrid(ds=da, reference_ds=reference_grid)
-            regridded.to_netcdf(self.processed_dir / grid_name)
+                regridded = self.regrid(ds=da, reference_ds=reference_grid)
+                regridded.to_netcdf(self.processed_dir / grid_name)
         interim_filepath.unlink()
 
     @staticmethod
-    def zero_array(da: xr.DataArray) -> xr.DataArray:
+    def zero_array(da: xr.DataArray) -> Optional[xr.DataArray]:
         """
         The DataArrays should have only values 1, 0. Instead, the 0 is replaced
         with some other *variable* value. This function figures out what that value
@@ -91,7 +97,9 @@ class HRSLProcessor(BaseProcessor):
 
         unique_values = np.unique(da.values)
 
-        assert (len(unique_values) == 2) and (1 in unique_values)
+        if not ((len(unique_values) == 2) and (1 in unique_values)):
+            # This can happen if we have a tile which is only ocean
+            print("File only contains one value - skipping!")
 
         zero_value = unique_values[unique_values != 1][0]
         da.values[da.values == zero_value] = 0

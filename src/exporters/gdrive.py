@@ -10,7 +10,7 @@ import gdown
 from .base import BaseExporter
 from ..utils import make_sentinel_dataset_name
 
-from typing import Dict, List, Optional
+from typing import cast, Dict, List
 
 
 class GDriveExporter(BaseExporter):
@@ -51,7 +51,7 @@ class GDriveExporter(BaseExporter):
 
         self.service = build("drive", "v3", credentials=creds)
 
-    def export(self, region_name: str, max_downloads: Optional[int] = None) -> None:
+    def export(self, **kwargs) -> None:
         r"""
         Download data from Google Drive. This is useful when downloading data exported by
         the regional exporter, as the filesizes can be large.
@@ -60,6 +60,12 @@ class GDriveExporter(BaseExporter):
         :param max_downloads: The max number of downloads. If None, all tiff files containing
             region_name are downloaded
         """
+
+        assert (
+            "region_name" in kwargs
+        ), f"region_name must be passed to the export function"
+        region_name = cast(str, kwargs.get("region_name"))
+        max_downloads = kwargs.get("max_downloads")
 
         query = f'(fullText contains "{region_name}") and (mimeType = "image/tiff")'
 
