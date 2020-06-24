@@ -2,10 +2,12 @@ import numpy as np
 import torch
 from pathlib import Path
 
+from torch.utils.data import Dataset
+
 from typing import Tuple
 
 
-class ClassifierDataset:
+class ClassifierDataset(Dataset):
     def __init__(self, data_dir: Path, train_set: bool = True) -> None:
 
         features_dir = data_dir / "features"
@@ -38,7 +40,7 @@ class ClassifierDataset:
         return torch.as_tensor(x.copy()).float(), y.float()
 
 
-class SegmentationDataset:
+class SegmentationDataset(Dataset):
     def __init__(self, data_dir: Path, train_set: bool = True) -> None:
 
         features_dir = data_dir / "features"
